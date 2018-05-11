@@ -8,6 +8,7 @@ local scene = composer.newScene()
 -- the scene is removed entirely (not recycled) via "composer.removeScene()"
 -- -----------------------------------------------------------------------------------
 local sceneTransition = composer.getVariable("sceneTransition")
+local fireEmitter = composer.getVariable("fireEmitter");
 
 local physics = require("physics");
 physics.start()
