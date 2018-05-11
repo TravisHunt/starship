@@ -278,7 +278,8 @@ function scene:create( event )
 	-- Debug output
 	debugText = display.newText(uiGroup, "", display.contentWidth / 2, display.contentHeight - 30, native.systemFont, 36)
 	
-	ship:addEventListener("tap", fireLaser)
+    --ship:addEventListener("tap", fireLaser)
+    Runtime:addEventListener("tap", fireLaser)
 	ship:addEventListener("touch", dragShip)
 
 	explosionSound = audio.loadSound("audio/explosion.wav")
