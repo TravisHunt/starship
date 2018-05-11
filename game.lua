@@ -277,10 +277,6 @@ function scene:create( event )
 
 	-- Debug output
 	debugText = display.newText(uiGroup, "", display.contentWidth / 2, display.contentHeight - 30, native.systemFont, 36)
-	
-    --ship:addEventListener("tap", fireLaser)
-    Runtime:addEventListener("tap", fireLaser)
-	ship:addEventListener("touch", dragShip)
 
 	explosionSound = audio.loadSound("audio/explosion.wav")
 	fireSound = audio.loadSound("audio/fire.wav")
@@ -298,7 +294,10 @@ function scene:show( event )
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 
 	elseif ( phase == "did" ) then
-		-- Code here runs when the scene is entirely on screen
+        -- Code here runs when the scene is entirely on screen
+        Runtime:addEventListener("tap", fireLaser)
+        ship:addEventListener("touch", dragShip)
+        
 		physics.start()
 		Runtime:addEventListener("collision", onCollision)
 		gameLoopTimer = timer.performWithDelay(500, gameLoop, 0)
