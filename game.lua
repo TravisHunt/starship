@@ -126,6 +126,8 @@ end
 local function dragShip( event )
     local ship = event.target
     local phase = event.phase
+    local maxX = display.contentWidth - ship.width
+    local minX = ship.width
 
     if ( phase == "began" ) then
         -- Set touch focus on the ship
@@ -135,6 +137,9 @@ local function dragShip( event )
     elseif ( phase == "moved" ) then
         -- Move the ship to the new touch position
         ship.x = event.x - ship.touchOffsetX
+
+        if ship.x > maxX then ship.x = maxX end
+        if ship.x < minX then ship.x = minX end
 	elseif ( phase == "ended" or phase == "cancelled" ) then
         -- Release touch focus on the ship
         display.currentStage:setFocus( nil )
@@ -271,7 +276,7 @@ function scene:create( event )
 	scoreText = display.newText(uiGroup, "Score: " .. score, 400, 80, native.systemFont, 36)
 
 	-- Debug output
-	debugText = display.newText(uiGroup, "", 200, display.contentHeight - 30, native.systemFont, 36)
+	debugText = display.newText(uiGroup, "", display.contentWidth / 2, display.contentHeight - 30, native.systemFont, 36)
 	
 	ship:addEventListener("tap", fireLaser)
 	ship:addEventListener("touch", dragShip)
