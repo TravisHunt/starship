@@ -66,6 +66,10 @@ local livesText
 local scoreText
 local debugText
 
+local resumeButton
+local pauseButton
+local menuButton
+
 local backGroup
 local mainGroup
 local uiGroup
@@ -73,6 +77,9 @@ local uiGroup
 local explosionSound
 local fireSound
 local musicTrack
+
+local pauseGame
+local resumeGame
 
 local function updateText()
     livesText.text = "Lives: " .. lives
@@ -186,6 +193,10 @@ local function endGame()
 	composer.gotoScene("highscores", sceneTransition)
 end
 
+local function gotoMenu()
+    composer.gotoScene("menu", sceneTransition)
+end
+
 local function onCollision( event )
     if ( event.phase == "began" ) then
         local obj1 = event.object1
@@ -237,6 +248,47 @@ local function onCollision( event )
     end
 end
 
+local function activateEventListeners()
+    ship:addEventListener("touch", dragShip)
+    Runtime:addEventListener("tap", fireLaser)
+    Runtime:addEventListener("collision", onCollision)
+end
+
+local function deactivateEventListeners()
+    ship:removeEventListener("touch", dragShip)
+    Runtime:removeEventListener("tap", fireLaser)
+    Runtime:removeEventListener("collision", onCollision)
+end
+
+resumeGame = function()
+    physics.start()
+
+    resumeButton.alpha = 0
+    menuButton.alpha = 0
+
+    resumeButton:removeEventListener("tap", resumeGame)
+    menuButton:removeEventListener("tap", gotoMenu)
+
+    activateEventListeners()
+    pauseButton:addEventListener("tap", pauseGame)
+    return true
+end
+
+pauseGame = function()
+    physics.pause()
+
+    resumeButton.alpha = 1
+    menuButton.alpha = 1
+
+    resumeButton:addEventListener("tap", resumeGame)
+    menuButton:addEventListener("tap", gotoMenu)
+
+    deactivateEventListeners()
+    pauseButton:removeEventListener("tap", pauseGame)
+    return true
+end
+
+
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -273,7 +325,21 @@ function scene:create( event )
 
 	-- Display lives and score
 	livesText = display.newText(uiGroup, "Lives: " .. lives, 200, 80, native.systemFont, 36)
-	scoreText = display.newText(uiGroup, "Score: " .. score, 400, 80, native.systemFont, 36)
+    scoreText = display.newText(uiGroup, "Score: " .. score, 400, 80, native.systemFont, 36)
+    
+    -- Pause button
+    pauseButton = display.newImageRect(uiGroup, "pausebutton.png", 40, 40)
+    pauseButton:setFillColor(1, 1, 1, 1)
+    pauseButton.x = 600
+    pauseButton.y = 80
+
+    -- Resume button
+    resumeButton = display.newText(uiGroup, "Resume", display.contentCenterX, display.contentCenterY, native.systemFont, 44)
+    resumeButton.alpha = 0
+
+    -- Menu button
+    menuButton = display.newText(uiGroup, "Menu", display.contentCenterX, display.contentCenterY + 50, native.systemFont, 44)
+    menuButton.alpha = 0
 
 	-- Debug output
 	debugText = display.newText(uiGroup, "", display.contentWidth / 2, display.contentHeight - 30, native.systemFont, 36)
@@ -295,11 +361,9 @@ function scene:show( event )
 
 	elseif ( phase == "did" ) then
         -- Code here runs when the scene is entirely on screen
-        Runtime:addEventListener("tap", fireLaser)
-        ship:addEventListener("touch", dragShip)
-        
-		physics.start()
-		Runtime:addEventListener("collision", onCollision)
+        physics.start()
+        pauseButton:addEventListener("tap", pauseGame)
+        activateEventListeners()
 		gameLoopTimer = timer.performWithDelay(500, gameLoop, 0)
 
 		-- Start the music
@@ -319,7 +383,7 @@ function scene:hide( event )
 		timer.cancel(gameLoopTimer)
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
-		Runtime:removeEventListener("collision", onCollision)
+		deactivateEventListeners()
 		physics.pause()
 		audio.stop(1)
 		composer.removeScene("game")
@@ -334,7 +398,9 @@ function scene:destroy( event )
 	-- Code here runs prior to the removal of scene's view
 	audio.dispose(explosionSound)
 	audio.dispose(fireSound)
-	audio.dispose(musicTrack)
+    audio.dispose(musicTrack)
+    
+    pauseButton:removeSelf()
 end
 
 
